@@ -23,14 +23,14 @@ def run_fcfs_simulation(processes: list[Process]) -> dict:
         )
 
     process_results: list[ProcessResult] = []
-    current_time = 0
+    current_time = 0 # Initial completion time
 
     for process in processes:
-        waiting_time = calculate_waiting_time(process.arrival_time, current_time)
-        turnaround_time = calculate_turnaround_time(process.burst_time, waiting_time)
-        completion_time = calculate_completion_time(process.arrival_time, turnaround_time)
+        waiting_time = max(current_time, process.arrival_time)
+        completion_time = current_time + process.burst_time
+        turnaround_time = completion_time - process.arrival_time
 
-        # Append results
+        # Save results
         process_results.append(ProcessResult(
             process=process,
             waiting_time=waiting_time,
@@ -81,23 +81,23 @@ def run_sjf_simulation(processes: list[Process]) -> dict:
     
     process_results: list[ProcessResult] = []
     ready_processes: list[ProcessResult] = []
-    start_time = 0
+    current_time = 0
 
     # We sort by burst time on lists that have arrived
     while processes or ready_processes:
-        while processes and processes[0].arrival_time <= start_time:
+        while processes and processes[0].arrival_time <= current_time:
             ready_processes.append(processes.pop(0))
 
         if not ready_processes:
-            start_time = processes[0].arrival_time
+            current_time = processes[0].arrival_time
             continue
 
         current_process = min(ready_processes, key=lambda p: p.burst_time)
         ready_processes.remove(current_process)
 
-        waiting_time = calculate_waiting_time(current_process.arrival_time, start_time)
-        turnaround_time = calculate_turnaround_time(current_process.burst_time, waiting_time)
-        completion_time = calculate_completion_time(current_process.arrival_time, turnaround_time)
+        waiting_time = max(current_time, current_process.arrival_time)
+        completion_time = current_time + current_process.burst_time
+        turnaround_time = completion_time - current_process.arrival_time
 
         process_results.append(ProcessResult(
             process=current_process,
@@ -106,7 +106,7 @@ def run_sjf_simulation(processes: list[Process]) -> dict:
             completion_time=completion_time
         ))
 
-        start_time = completion_time
+        current_time = completion_time
     
     avg_wait = sum(r.waiting_time for r in process_results) / len(process_results)
     avg_tat = sum(r.turnaround_time for r in process_results) / len(process_results)
@@ -125,6 +125,7 @@ def run_sjf_simulation(processes: list[Process]) -> dict:
             "avg_turnaround_time": round(avg_tat, 2)
         }
     }
+
 
 
 
