@@ -1,6 +1,5 @@
-from metrics import calculate_turnaround_time, calculate_waiting_time, calculate_completion_time
-from base import Process, ProcessResult
-from utils import is_sorted_by_arrival, is_sorted_by_burst, sort_processes_by_arrival, sort_processes_by_burst
+from base import Process, ProcessResult, Clock
+from utils import is_sorted_by_arrival, sort_processes_by_burst
 
 def run_fcfs_simulation(processes: list[Process]) -> dict:
     """
@@ -22,23 +21,43 @@ def run_fcfs_simulation(processes: list[Process]) -> dict:
             "Please use 'aevum.utils.sort_processes_by_arrival()' before passing the list."
         )
 
+    clock = Clock()
+    current_job: Process = None
     process_results: list[ProcessResult] = []
-    current_time = 0 # Initial completion time
+    ready_processes: list[ProcessResult] = []
+    remaining_time = 0
+    start_time = 0
 
-    for process in processes:
-        waiting_time = max(current_time, process.arrival_time)
-        completion_time = current_time + process.burst_time
-        turnaround_time = completion_time - process.arrival_time
-
-        # Save results
-        process_results.append(ProcessResult(
-            process=process,
-            waiting_time=waiting_time,
-            turnaround_time=turnaround_time,
-            completion_time=completion_time
-        ))
+    while processes or process_results or current_job:
+        # Check if any process arrives at THIS tick
+        while processes and processes[0].arrival_time <= clock.time:
+            ready_processes.append(processes.pop(0))
         
-        current_time = completion_time
+        # If CPU is idle, pick the shortest job from ready queue
+        if not current_job and ready_processes:
+            current_job = ready_processes.pop(0) # FCFS, so first process will be executed
+            remaining_time = current_job.burst_time
+            start_time = clock.time
+
+        # Process 1 unit of work
+        if current_job:
+            remaining_time -= 1
+            
+            # Record metrics if finished
+            if remaining_time == 0:
+                # Use your existing logic for metrics
+                comp_t = clock.time + 1
+                wait_t = start_time - current_job.arrival_time
+                tat_t = comp_t - current_job.arrival_time
+                
+                process_results.append(ProcessResult(
+                    process=current_job,
+                    waiting_time=wait_t,
+                    turnaround_time=tat_t,
+                    completion_time=comp_t
+                ))
+                current_job = None # CPU becomes idle for the next tick
+
 
     avg_wait = sum(r.waiting_time for r in process_results) / len(process_results)
     avg_tat = sum(r.turnaround_time for r in process_results) / len(process_results)
@@ -79,35 +98,47 @@ def run_sjf_simulation(processes: list[Process]) -> dict:
             "Please use 'aevum.utils.sort_processes_by_arrival()' before passing the list."
         )
     
+    clock = Clock()
     process_results: list[ProcessResult] = []
     ready_processes: list[ProcessResult] = []
-    current_time = 0
-
-    # We sort by burst time on lists that have arrived
-    while processes or ready_processes:
-        while processes and processes[0].arrival_time <= current_time:
-            ready_processes.append(processes.pop(0))
-
-        if not ready_processes:
-            current_time = processes[0].arrival_time
-            continue
-
-        current_process = min(ready_processes, key=lambda p: p.burst_time)
-        ready_processes.remove(current_process)
-
-        waiting_time = max(current_time, current_process.arrival_time)
-        completion_time = current_time + current_process.burst_time
-        turnaround_time = completion_time - current_process.arrival_time
-
-        process_results.append(ProcessResult(
-            process=current_process,
-            waiting_time=waiting_time,
-            turnaround_time=turnaround_time,
-            completion_time=completion_time
-        ))
-
-        current_time = completion_time
     
+    current_job: Process = None
+    remaining_time = 0
+    start_time = 0
+
+    while processes or ready_processes or current_job:
+        # Check if any process arrives at THIS tick
+        while processes and processes[0].arrival_time <= clock.time:
+            ready_processes.append(processes.pop(0))
+        
+        # If CPU is idle, pick the shortest job from ready queue
+        if not current_job and ready_processes:
+            current_job = min(ready_processes, key=lambda p: p.burst_time)
+            ready_processes.remove(current_job)
+            remaining_time = current_job.burst_time
+            start_time = clock.time
+
+        # If a job is running, process 1 unit of work
+        if current_job:
+            remaining_time -= 1
+
+            # Check if the job finished on THIS tick
+            if remaining_time == 0:
+                completion_time = clock.time + 1
+                waiting_time = start_time - current_job.arrival_time
+                turnaround_time = completion_time - current_job.arrival_time
+
+                process_results.append(ProcessResult(
+                    process=current_job,
+                    waiting_time=waiting_time,
+                    turnaround_time=turnaround_time,
+                    completion_time=completion_time
+                ))
+
+                current_job = None
+
+        clock.tick()
+
     avg_wait = sum(r.waiting_time for r in process_results) / len(process_results)
     avg_tat = sum(r.turnaround_time for r in process_results) / len(process_results)
 
@@ -125,17 +156,5 @@ def run_sjf_simulation(processes: list[Process]) -> dict:
             "avg_turnaround_time": round(avg_tat, 2)
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
