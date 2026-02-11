@@ -29,7 +29,7 @@ def run_fcfs_simulation(processes: list[Process]) -> dict:
     remaining_time = 0
     start_time = 0
 
-    while processes or process_results or current_job:
+    while processes or ready_processes or current_job:
         # Check if any process arrives at THIS tick
         while processes and processes[0].arrival_time <= clock.time:
             ready_processes.append(processes.pop(0))
@@ -58,6 +58,7 @@ def run_fcfs_simulation(processes: list[Process]) -> dict:
                     completion_time=comp_t
                 ))
                 current_job = None # CPU becomes idle for the next tick
+        clock.tick()
 
 
     avg_wait = sum(r.waiting_time for r in process_results) / len(process_results)
