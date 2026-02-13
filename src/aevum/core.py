@@ -36,7 +36,8 @@ class SimulationEngine:
             raise ValueError("Process list is empty")
             
         # 1. Setup
-        incoming = list(processes) # Copy to avoid messing up original list
+        incoming = sorted(processes, key=lambda p: (p.arrival_time, p.pid))
+
         ready_queue: List[Process] = []
         remaining_times = {p.pid: p.burst_time for p in incoming}
         
