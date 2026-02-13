@@ -6,29 +6,27 @@ A unified Python module of CPU schedulers for educators and students, and for ed
 
 ## How to use?
 
-Here's an example implementation of FCFS scheduling:
+Here's an example implementation of RR scheduling:
 
 ```python
-# High-Level Approach (Fastest Way)
-from aevum.base import Process
-from aevum.utils import sort_processes_by_arrival
-from aevum.schedulers import run_fcfs_simulation
+from aevum.core import Process, SimulationEngine
+from aevum.policies import RR
 
-# Define unsorted processes
-raw_data = [
-    Process(pid=1, burst_time=10, arrival_time=5),
-    Process(pid=2, burst_time=5, arrival_time=0),
-    Process(pid=3, burst_time=8, arrival_time=2)
-]
+def main():
+    processes = [
+        Process(pid=1, burst_time=8, arrival_time=0),
+        Process(pid=2, burst_time=4, arrival_time=1),
+        Process(pid=3, burst_time=9, arrival_time=2),
+        Process(pid=4, burst_time=12, arrival_time=5),
+        Process(pid=5, burst_time=5, arrival_time=4),
+    ]
 
-# Aevum enforces order for FCFS to ensure simulation integrity
-ready_queue = sort_processes_by_arrival(raw_data)
-results = run_fcfs_simulation(ready_queue)
+    engine = SimulationEngine(RR(time_quantum=3))
+    res = engine.run(processes)
+    print(res)
 
-print(f"Average Wait: {results['averages']['avg_waiting_time']}")
-
-# Low-Level Approach (For Experimentation and Control)
-# COMING SOON!
+if __name__ == "__main__":
+    main()
 ```
 
 ---
