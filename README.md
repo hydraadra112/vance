@@ -40,7 +40,12 @@ Supported:
 - [x] Shortest Time to Completion (STCF)
 - [x] Round Robin (RR)
 
-I will add more algorithms in the future, but I aim to finish the todo lists above before I publish it officially as a Python package.
+Plans:
+
+- [ ] Dispatcher Feature - To control the context switching for more accuracy in simulation
+- [ ] Visualizer Module - Visualizes output in the terminal
+
+I will add more algorithms and features in the future, but I aim to finish the todo lists above before I publish it officially as a Python package.
 
 ---
 
