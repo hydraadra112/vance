@@ -83,21 +83,16 @@ class SimulationEngine:
             
             # A. Handle Arrivals
             # We check arrivals before asking the policy so the policy sees everyone
-            print("A. CHECKING ARRIVALS!")
             while incoming and incoming[0].arrival_time <= self.clock.time:
                 new_proc = incoming.pop(0)
                 ready_queue.append(new_proc)
                 self.trace_log.append(f"T={self.clock.time}: Process {new_proc.pid} arrived.")
 
-                print(f"T={self.clock.time}: Process {new_proc.pid} arrived.")
-
             # Condition to not change process during a context switch
-            print(f"Checking if dispatchet is currently switching: {self.dispatcher.is_currently_switching}")
             if not self.dispatcher.is_currently_switching:
                 # B. Ask Policy for Decision (Policy Responsibility)
                 # We pass the mutable ready_queue so the policy can pop/append if needed
 
-                print("Getting new process via policy get_next_process")
                 next_process = self.policy.get_next_process(
                     ready_queue, 
                     current_process, 
@@ -106,16 +101,10 @@ class SimulationEngine:
                 )
             
                 # C. Detect & Handle Context Switch
-                print(f"Checking if next process != current process: {next_process != current_process}")
                 if next_process != current_process:
-
-                    print(f"Checking if self.dispatcher.dispatch_latency > 0: {self.dispatcher.dispatch_latency > 0}")
                     if self.dispatcher.dispatch_latency > 0:
                         self.dispatcher.start_switch(next_process.pid if next_process else None)
                         self.trace_log.append(f"T={self.clock.time}: STARTING SWITCH to P{next_process.pid if next_process else 'Idle'}")
-
-                        print(f"T={self.clock.time}: STARTING SWITCH to P{next_process.pid if next_process else 'Idle'}")
-
                     else:
                         current_process = next_process
                         current_job_runtime = 0
@@ -124,9 +113,7 @@ class SimulationEngine:
             if self.dispatcher.is_currently_switching:
                 # CPU is busy swapping context, no work done on processes!
                 self.dispatcher.tick()
-                print("Dispatcher Tick!")
                 self.trace_log.append(f"T={self.clock.time}: Dispatcher busy...")
-                print(f"T={self.clock.time}: Dispatcher busy...")
 
                 # Automatically go to next process
                 # if latency is <= 0 
@@ -136,14 +123,10 @@ class SimulationEngine:
                     pid_str = current_process.pid if current_process else 'Idle'
                     self.trace_log.append(f"T={self.clock.time}: Switch complete. P{pid_str} is now on CPU.")
 
-                    print(f"T={self.clock.time}: Switch complete. P{pid_str} is now on CPU.")
-
             elif current_process:
-                print("Decrement remaining time of current process")
                 remaining_times[current_process.pid] -= 1
                 current_job_runtime += 1
                 
-                print("Check completion")
                 # Check Completion
                 if remaining_times[current_process.pid] == 0:
                     self._record_completion(current_process)
@@ -152,7 +135,6 @@ class SimulationEngine:
             else:
                 self.trace_log.append(f"T={self.clock.time}: CPU Idle.")
             
-            print(f"T={self.clock.time}: CLOCK TICK!")
             self.clock.tick()
 
         return self._get_output()
