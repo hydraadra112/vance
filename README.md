@@ -1,48 +1,60 @@
 # **vance**
 
-A unified Python module of CPU schedulers for educators and students, and for educational and simulation purposes.
+A modular Python package designed to simulate, trace, and visualize OS CPU scheduling algorithms.
+
+Originally built to "scratch my own itch" type of package, but decided to include hardware representations for people like me who has the same itch, but require a more sophisticated experimentation.
 
 ---
 
 ## How to use?
 
-Here's an example implementation of SJF scheduling:
+Here's an example implementation of RR scheduling:
+
+First, install the package:
+
+```bash
+pip install vance # If using pip
+uv add vance      # vance natively uses uv!
+```
 
 ```python
-# Sample implementation using the SJF scheduler
-from aevum import Process, SimulationEngine, SJF, Visualizer
+# Sample implementation using the RR scheduler
+from vance import RR, SimulationEngine, Visualizer, Process
 
 p = [
-Process(pid=1, burst_time=5, arrival_time=0),
-Process(pid=2, burst_time=2,  arrival_time=2),
-Process(pid=3, burst_time=6,  arrival_time=5),
-Process(pid=4, burst_time=6,  arrival_time=5),
-Process(pid=5, burst_time=2,  arrival_time=10)
+Process(pid=1, burst_time=15, arrival_time=0),
+Process(pid=2, burst_time=8,  arrival_time=2),
+Process(pid=3, burst_time=12,  arrival_time=5),
+Process(pid=4, burst_time=9,  arrival_time=5),
+Process(pid=5, burst_time=14,  arrival_time=10)
 ]
 
-dispatch_latency = 3 # Optional, defaults to 0
+dispatch_latency = 3
 
-# Run simulation, get results
-engine = SimulationEngine(SJF(), dispatch_latency)
+engine = SimulationEngine(RR(time_quantum=5), dispatch_latency)
 res = engine.run(p)
 
-# To visualize your output
 v = Visualizer()
 v.render_gantt(res)
 v.display_summary(res)
 v.display_audit(res)
 ```
 
+Sample Output:
+![Sample Output of the Code Above](./public/images/sample_output.png)
+
 ### Creating a Custom Scheduler:
 
 If you wish to create a custom scheduler, you can follow the blueprint below:
 
 ```python
-from aevum.policies import SchedulerPolicy
+from vance.policies import SchedulerPolicy
 
 class MyCustomPolicy(SchedulerPolicy):
     def get_next_process(self, ready_queue, current_process, current_runtime, remaining_times):
         """
+        The logic of your custom policy on deciding how to get the next process
+
         Args:
             ready_queue: A list of Process objects currently waiting for the CPU.
             current_process: The process currently occupying the CPU (if any).
@@ -105,29 +117,12 @@ total_time = res["total_time"]
 
 ---
 
-## **Initial TODO lists**
-
-Supported:
-
-- [x] First Count First Serve (FCFS)
-- [x] Shortest Job First (SJF)
-- [x] Shortest Time to Completion (STCF)
-- [x] Round Robin (RR)
-- [x] Dispatcher Feature
-- [x] Visualizer Module
-
----
-
 ## Why do this?
 
-During my OS class, we are tasked to perform simulations of CPU scheduling algorithms in Python, and since there are no Python modules (as far as I know) for schedulers, I had to scour through the internet to look for sample implementation, and somehow refactor every algorithm that I need to fit my use case.
+During my OS class, we are tasked to perform simulations of CPU scheduling algorithms in Python, and since there are no Python packages (as far as I know) for CPU schedulers, I had to scour through the internet to look for sample implementations. I had to somehow refactor every algorithm that I need to fit my use case.
 
-Because of this, it took me a few hours to perform the simulation. It could've been far more faster if there was a module, and our teacher could've provide a demo as well.
+Because of this, it took me a few hours to perform the simulation. It could've been far more faster if there was a unified package. Our teacher could've provided a demonstration as well.
 
-So I took the initiative in starting this project, and thought of it as my first ever open source project to give back to the community.
+So I took the initiative in starting this project, and thought of it as my first ever open source project.
 
-This project will also be a platform for me (I hope it does for you too), to practice my coding skills and strengthen our OS scheduling knowledge.
-
-```
-
-```
+This project will also be a platform for me (I hope it does for you too), to practice my coding skills and strengthen my OS scheduling knowledge.
