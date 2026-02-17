@@ -61,6 +61,11 @@ class Visualizer:
         labels = ["     "] + [f"{t:<5}" if t % 5 == 0 else "" for t in range(total_time)]
         print(Visualizer._color("".join(labels), "cyan"))
 
+        exec_icon = Visualizer._color("█", theme["EXEC"])
+        wait_icon = Visualizer._color("░", theme["WAIT"])
+        ctx_icon = Visualizer._color("▒", theme["CTX"])
+        print(f"\n{Visualizer._color('KEY:', 'dim')} {exec_icon} Executing  {wait_icon} Waiting  {ctx_icon} Context Switch")
+
     @staticmethod
     def display_summary(res: dict):
         """Prints a clean results table and efficiency metrics."""
